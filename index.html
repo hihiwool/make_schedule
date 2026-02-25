@@ -2,57 +2,208 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로또 번호 생성기</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>GMPKK 스마트 ROSTER 뷰어</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #2563eb; --sun: #ef4444; --sat: #3b82f6; }
+        body { font-family: 'Pretendard', sans-serif; background: #f4f7fa; padding: 20px; color: #334155; line-height: 1.6; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #1e293b; margin-bottom: 5px; }
+        .info-text { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 0.9em; }
+        
+        .example-box { background: #fff9db; border: 1px solid #fab005; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85em; display: none; }
+        .example-box pre { margin: 5px 0 0 0; background: rgba(255,255,255,0.5); padding: 10px; border-radius: 4px; overflow-x: auto; color: #856404; font-weight: bold;}
+
+        .input-area { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .help-btn { font-size: 12px; cursor: pointer; color: var(--primary); text-decoration: underline; border: none; background: none; }
+        
+        textarea { width: 100%; height: 120px; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; resize: none; box-sizing: border-box; margin-bottom: 15px; }
+        .controls { display: flex; gap: 12px; }
+        button.main-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        button.main-btn:hover { background: #1d4ed8; }
+        
+        /* 이미지 저장 버튼 스타일 */
+        button.save-btn { background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 15px; }
+        button.save-btn:hover { background: #047857; }
+
+        select { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #cbd5e1; font-size: 16px; background: white; cursor: pointer; }
+
+        .calendar-section { margin-top: 30px; animation: fadeIn 0.4s ease-out; }
+        
+        /* 캡처를 위한 스타일 보정 (배경색 명시) */
+        #captureArea { background: white; padding: 20px; border-radius: 12px; }
+        
+        .cal-title { text-align: center; font-size: 1.5em; font-weight: bold; margin-bottom: 20px; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; background: #e2e8f0; padding: 6px; border-radius: 10px; }
+        .day { background: white; min-height: 100px; padding: 10px; border-radius: 6px; display: flex; flex-direction: column; }
+        .weekday { text-align: center; padding: 10px; font-weight: 800; color: #64748b; font-size: 0.9em; }
+        
+        .day-header { font-size: 0.9em; font-weight: bold; margin-bottom: 10px; color: #94a3b8; }
+        .sun { color: var(--sun); }
+        .sat { color: var(--sat); }
+
+        .shift-box { text-align: center; font-size: 1.5em; font-weight: 900; padding: 12px 0; border-radius: 8px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .A-type { background: #eff6ff; color: #1d4ed8; } 
+        .P-type { background: #f0fdf4; color: #166534; }
+        .S-type { background: #fff9c4; color: #854d0e; }
+        .O-type { background: #f8fafc; color: #cbd5e1; font-weight: 500; }
+        .ETC-type { background: #faf5ff; color: #7e22ce; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <button id="theme-toggle" class="theme-toggle" aria-label="테마 변경">
-            <i class="fas fa-sun"></i>
-        </button>
-        <h1>로또 번호 생성기</h1>
-        <div class="numbers-container">
-            <div class="number"></div>
-            <div class="number"></div>
-            <div class="number"></div>
-            <div class="number"></div>
-            <div class="number"></div>
-            <div class="number"></div>
-        </div>
-        <button id="generate-btn">번호 생성하기</button>
 
-        <div class="contact-section">
-            <hr>
-            <h3>제휴 및 서비스 문의</h3>
-            <form action="https://formspree.io/f/xlgwaaqo" method="POST" id="contact-form">
-                <div class="form-group">
-                    <input type="email" name="email" placeholder="이메일 주소" required>
-                </div>
-                <div class="form-group">
-                    <textarea name="message" placeholder="문의 내용을 입력해주세요" required></textarea>
-                </div>
-                <button type="submit" class="submit-btn">문의 보내기</button>
-            </form>
-            <div id="form-status"></div>
-        </div>
+<div class="container">
+    <h2>🗓️ ROSTER 근무 조회</h2>
+    <p class="info-text">엑셀 시트 정보를 복사해서 붙여넣으세요. ★입력 예시 참고!!</p>
 
-        <div class="comments-section">
-            <hr>
-            <h3>댓글</h3>
-            <div id="disqus_thread"></div>
-            <script>
-                (function() {
-                var d = document, s = d.createElement('script');
-                s.src = 'https://product-gam.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-                })();
-            </script>
-            <noscript>댓글을 확인하려면 자바스크립트를 활성화해주세요. <a href="https://disqus.com/?ref_noscript">Disqus 제공 댓글 서비스</a></noscript>
+    <div id="exampleBox" class="example-box">
+        <strong>💡 이렇게 복사해서 넣어주세요:</strong>
+        <pre>26년 3월 GMPKK ROSTER
+NO  성명  1  2  3  4  5 ...  휴무/APTTL
+1  홍길동  O  A1  A1  A2  A2 ... 13
+2  김철수  P5  P5  O  P5  A1 ... 15</pre>
+        <p style="margin-top:5px; font-size:11px;">*첫 줄에 'OO년 OO월' 정보가 꼭 포함되어야 요일이 정확해집니다.</p>
+    </div>
+    
+    <div class="input-area">
+        <div class="label-row">
+            <label style="font-weight: bold; font-size: 0.9em;">데이터 입력</label>
+            <button class="help-btn" onclick="toggleExample()">입력 예시 보기/닫기</button>
+        </div>
+        <textarea id="rawInput" placeholder="여기에 엑셀 데이터를 붙여넣으세요..."></textarea>
+        <div class="controls">
+            <button class="main-btn" onclick="parseAndProcess()">데이터 분석</button>
+            <select id="userDropdown" onchange="render()"><option value="">이름을 선택하세요</option></select>
         </div>
     </div>
-    <script src="main.js"></script>
+
+    <div id="calendarView" style="display:none;" class="calendar-section">
+        <div id="captureArea">
+            <h3 id="calHeader" class="cal-title"></h3>
+            <div class="calendar-grid" id="grid">
+                <div class="weekday sun">일</div><div class="weekday">월</div><div class="weekday">화</div>
+                <div class="weekday">수</div><div class="weekday">목</div><div class="weekday">금</div><div class="weekday sat">토</div>
+            </div>
+        </div>
+        <button class="save-btn" onclick="saveAsImage()">📷 이미지로 저장하기</button>
+    </div>
+</div>
+
+<script>
+    let db = {};
+    let info = { year: 2026, month: 3, days: 31 };
+
+    function toggleExample() {
+        const box = document.getElementById('exampleBox');
+        box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+    }
+
+    function parseAndProcess() {
+        const input = document.getElementById('rawInput').value.trim();
+        if(!input) return alert("데이터를 입력해 주세요.");
+
+        const lines = input.split('\n');
+        
+        const headerLine = lines[0];
+        const yMatch = headerLine.match(/(\d{2,4})년/);
+        const mMatch = headerLine.match(/(\d{1,2})월/);
+
+        if (yMatch && mMatch) {
+            let y = parseInt(yMatch[1]);
+            if (y < 100) y += 2000;
+            info.year = y;
+            info.month = parseInt(mMatch[1]);
+            info.days = new Date(info.year, info.month, 0).getDate();
+        } else {
+            alert("첫 줄에서 'OO년 OO월' 정보를 찾지 못했습니다. 요일이 부정확할 수 있습니다.");
+        }
+
+        db = {};
+        const select = document.getElementById('userDropdown');
+        select.innerHTML = '<option value="">이름을 선택하세요</option>';
+
+        lines.forEach(line => {
+            const cols = line.split(/\t|\s{2,}/).map(c => c.trim()).filter(c => c !== "");
+            if (cols.length < 10) return;
+
+            const skip = ["성명", "일자", "NO", "순번", "구분", "총계", "합계", "ROSTER"];
+            if (skip.some(s => cols[0].includes(s) || (cols[1] && cols[1].includes(s)))) return;
+
+            const nameIdx = !isNaN(cols[0]) ? 1 : 0;
+            const name = cols[nameIdx];
+            const shifts = cols.slice(nameIdx + 1, nameIdx + 1 + info.days);
+
+            if (name && isNaN(name) && !skip.includes(name)) {
+                db[name] = shifts;
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
+            }
+        });
+
+        if (Object.keys(db).length > 0) {
+            alert(`${info.year}년 ${info.month}월 데이터 분석 성공! (${Object.keys(db).length}명)`);
+        }
+    }
+
+    function render() {
+        const name = document.getElementById('userDropdown').value;
+        if(!name) return;
+
+        document.getElementById('calendarView').style.display = 'block';
+        document.getElementById('calHeader').innerText = `${name}님 [${info.year}년 ${info.month}월]`;
+        
+        const grid = document.getElementById('grid');
+        while(grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+        const firstDayIdx = new Date(info.year, info.month - 1, 1).getDay();
+        const shifts = db[name];
+
+        for(let i=0; i<firstDayIdx; i++) grid.appendChild(document.createElement('div')).className='day';
+
+        for(let d=1; d<=info.days; d++) {
+            const cell = document.createElement('div');
+            cell.className = 'day';
+            const dow = (firstDayIdx + d - 1) % 7;
+            const h = document.createElement('div');
+            h.className = 'day-header' + (dow===0?' sun':(dow===6?' sat':''));
+            h.innerText = d;
+            
+            const code = (shifts && shifts[d-1]) ? shifts[d-1] : '-';
+            const b = document.createElement('div');
+            let type = 'ETC-type';
+            if (code === 'O') type = 'O-type';
+            else if (code.startsWith('A')) type = 'A-type';
+            else if (code.startsWith('P')) type = 'P-type';
+            else if (code.startsWith('S')) type = 'S-type';
+            
+            b.className = 'shift-box ' + type;
+            b.innerText = code;
+
+            cell.appendChild(h);
+            cell.appendChild(b);
+            grid.appendChild(cell);
+        }
+    }
+
+    // 이미지 저장 함수
+    function saveAsImage() {
+        const name = document.getElementById('userDropdown').value;
+        const target = document.getElementById('captureArea');
+        
+        html2canvas(target, {
+            backgroundColor: "#ffffff", // 배경색 하얗게
+            scale: 2 // 화질 2배로 선명하게
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `${name}_${info.year}년_${info.month}월_근무표.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+</script>
 </body>
 </html>
