@@ -50,6 +50,8 @@
         .O-type { background: #f8fafc; color: #cbd5e1; font-weight: 500; }
         .ETC-type { background: #faf5ff; color: #7e22ce; }
 
+        .colleagues { font-size: 10px; color: #94a3b8; margin-top: 5px; height: 2.4em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -65,7 +67,7 @@
 NO  성명  1  2  3  4  5 ...  휴무/APTTL
 1  홍길동  O  A1  A1  A2  A2 ... 13
 2  김철수  P5  P5  O  P5  A1 ... 15</pre>
-        <p style="margin-top:5px; font-size:11px;">*첫 줄에 'OO년 OO월' 정보가 꼭 포함되어야 요일이 정확해집니다.</p>
+        <p style="margin-top:5px; font-size:11px;">*첫 줄에 'OO년 OO월' 정보가 꼭 포함되어야 요일이 정확해집니다. 'Y'와 'O'는 휴무입니다.</p>
     </div>
     
     <div class="input-area">
@@ -175,7 +177,7 @@ NO  성명  1  2  3  4  5 ...  휴무/APTTL
             const code = (shifts && shifts[d-1]) ? shifts[d-1] : '-';
             const b = document.createElement('div');
             let type = 'ETC-type';
-            if (code === 'O') type = 'O-type';
+            if (code === 'O' || code === 'Y') type = 'O-type';
             else if (code.startsWith('A')) type = 'A-type';
             else if (code.startsWith('P')) type = 'P-type';
             else if (code.startsWith('S')) type = 'S-type';
@@ -183,8 +185,20 @@ NO  성명  1  2  3  4  5 ...  휴무/APTTL
             b.className = 'shift-box ' + type;
             b.innerText = code;
 
+            // 동료 찾기 로직
+            const cDiv = document.createElement('div');
+            cDiv.className = 'colleagues';
+            if (code !== 'O' && code !== 'Y' && code !== '-') {
+                const prefix = code[0];
+                const peers = Object.keys(db).filter(n => n !== name && db[n][d-1] && db[n][d-1].startsWith(prefix));
+                if (peers.length > 0) {
+                    cDiv.innerText = "👥 " + peers.join(', ');
+                }
+            }
+
             cell.appendChild(h);
             cell.appendChild(b);
+            cell.appendChild(cDiv);
             grid.appendChild(cell);
         }
     }
