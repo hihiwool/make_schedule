@@ -98,6 +98,28 @@ NO  성명  1  2  3  4  5 ...  휴무/APTTL
     let db = {};
     let info = { year: 2026, month: 3, days: 31 };
 
+    function normalizeShiftCode(code) {
+        return (code || '-').toString().trim().toUpperCase();
+    }
+
+    function getShiftFamily(code) {
+        const normalized = normalizeShiftCode(code);
+        if (normalized === 'O' || normalized === 'Y' || normalized === '-') return null;
+        if (normalized.startsWith('A')) return 'A';
+        if (normalized.startsWith('P')) return 'P';
+        if (normalized.startsWith('S')) return 'S';
+        return normalized;
+    }
+
+    function getShiftType(code) {
+        const family = getShiftFamily(code);
+        if (!family) return 'O-type';
+        if (family === 'A') return 'A-type';
+        if (family === 'P') return 'P-type';
+        if (family === 'S') return 'S-type';
+        return 'ETC-type';
+    }
+
     function toggleExample() {
         const box = document.getElementById('exampleBox');
         box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
@@ -174,13 +196,9 @@ NO  성명  1  2  3  4  5 ...  휴무/APTTL
             h.className = 'day-header' + (dow===0?' sun':(dow===6?' sat':''));
             h.innerText = d;
             
-            const code = (shifts && shifts[d-1]) ? shifts[d-1] : '-';
+            const code = normalizeShiftCode((shifts && shifts[d-1]) ? shifts[d-1] : '-');
             const b = document.createElement('div');
-            let type = 'ETC-type';
-            if (code === 'O' || code === 'Y') type = 'O-type';
-            else if (code.startsWith('A')) type = 'A-type';
-            else if (code.startsWith('P')) type = 'P-type';
-            else if (code.startsWith('S')) type = 'S-type';
+            const type = getShiftType(code);
             
             b.className = 'shift-box ' + type;
             b.innerText = code;
@@ -188,9 +206,9 @@ NO  성명  1  2  3  4  5 ...  휴무/APTTL
             // 동료 찾기 로직
             const cDiv = document.createElement('div');
             cDiv.className = 'colleagues';
-            if (code !== 'O' && code !== 'Y' && code !== '-') {
-                const prefix = code[0];
-                const peers = Object.keys(db).filter(n => n !== name && db[n][d-1] && db[n][d-1].startsWith(prefix));
+            const family = getShiftFamily(code);
+            if (family) {
+                const peers = Object.keys(db).filter(n => n !== name && getShiftFamily(db[n][d-1]) === family);
                 if (peers.length > 0) {
                     cDiv.innerText = "👥 " + peers.join(', ');
                 }
